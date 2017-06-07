@@ -67,6 +67,9 @@ public class AlipayServiceImpl implements AlipayService {
             requestData.put("total_amount", amount);
             requestData.put("subject", subject);
             requestData.put("product_code", "FAST_INSTANT_TRADE_PAY");
+            requestData.put("body", subject);
+            requestData.put("passback_params", "merchantBizType%3d3C%26merchantBizNo%3d2016010101111");
+            requestData.put("timeout_express", "90m");
 
             if (!StringUtils.isEmpty(appInfo.getSellerId())) {
                 requestData.put("seller_id", appInfo.getSellerId());
@@ -88,9 +91,9 @@ public class AlipayServiceImpl implements AlipayService {
     private HttpEntity createEntityFor(AppInfo appInfo, String requestMethod, Map<String, Object> requestData) throws InvalidKeyException {
         List<NameValuePair> parameters = new ArrayList<>();
 
-        if (!requestData.containsKey("extend_params")) {
-            requestData.put("extend_params", Collections.emptyMap());
-        }
+//        if (!requestData.containsKey("extend_params")) {
+//            requestData.put("extend_params", Collections.emptyMap());
+//        }
 
         parameters.add(new BasicNameValuePair("app_id", appInfo.getId()));
         parameters.add(new BasicNameValuePair("method", requestMethod));
@@ -100,6 +103,8 @@ public class AlipayServiceImpl implements AlipayService {
         parameters.add(new BasicNameValuePair("sign_type", "RSA2"));
         parameters.add(new BasicNameValuePair("timestamp", LocalDateTime.now().format(formatter)));
         parameters.add(new BasicNameValuePair("version", "1.0"));
+        parameters.add(new BasicNameValuePair("notify_url", "https://www.baidu.com"));
+
         if (!StringUtils.isEmpty(appInfo.getNotifyUrl()))
             parameters.add(new BasicNameValuePair("notify_url", appInfo.getNotifyUrl()));
         try {
