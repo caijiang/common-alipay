@@ -28,4 +28,9 @@ public interface AlipayService {
     ChargeTrade createTrade(AppInfo appInfo, String tradeId, BigDecimal amount, String subject) throws IOException
             , AlipayException, InvalidKeyException;
 
+    /**
+     *
+     * @return 默认的appInfo
+     */
+    AppInfo defaultAppInfo();
 }

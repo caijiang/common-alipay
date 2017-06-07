@@ -7,18 +7,18 @@ import me.jiangcai.alipay.AppInfo;
 import me.jiangcai.alipay.ChargeTrade;
 import me.jiangcai.alipay.RSA;
 import me.jiangcai.alipay.exception.AlipayException;
+import me.jiangcai.alipay.http.ResponseHandler;
+import me.jiangcai.alipay.response.TradeCreate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.EntityBuilder;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -74,15 +74,14 @@ public class AlipayServiceImpl implements AlipayService {
                     createEntityFor(appInfo, "alipay.trade.create", requestData)
             );
 
-            try (CloseableHttpResponse response = client.execute(post)) {
-                System.out.println(EntityUtils.toString(response.getEntity()));
-            }
+            TradeCreate tradeCreate = client.execute(post, new ResponseHandler<>(TradeCreate.class, appInfo));
+            System.out.println(tradeCreate);
         }
 
         return null;
     }
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    public static final ObjectMapper objectMapper = new ObjectMapper();
     static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
 
     private HttpEntity createEntityFor(AppInfo appInfo, String requestMethod, Map<String, Object> requestData) throws InvalidKeyException {
@@ -146,7 +145,7 @@ public class AlipayServiceImpl implements AlipayService {
 
     private AppInfo buildAppInfo(AppInfo appInfo) {
         if (appInfo == null) {
-            appInfo = new AppInfo();
+            return defaultAppInfo();
         }
         AppInfo app = new AppInfo();
         app.setId(StringUtils.isEmpty(appInfo.getId()) ?
@@ -168,5 +167,26 @@ public class AlipayServiceImpl implements AlipayService {
         }
 
         return app;
+    }
+
+    private AppInfo defaultAppInfo;
+
+    @Override
+    public AppInfo defaultAppInfo() {
+        if (defaultAppInfo != null)
+            return defaultAppInfo;
+        defaultAppInfo = new AppInfo();
+        defaultAppInfo.setId(environment.getRequiredProperty("me.jiangcai.alipay.default.appId"));
+        defaultAppInfo.setSellerId(environment.getProperty("me.jiangcai.alipay.default.sellId"));
+        defaultAppInfo.setNotifyUrl(environment.getProperty("me.jiangcai.alipay.default.notifyUrl"));
+
+        try {
+            defaultAppInfo.setPrivateKey(RSA.readPrivateKeyFromString(environment.getRequiredProperty("me.jiangcai.alipay.default.privateKey")));
+            defaultAppInfo.setAlipayPublicKey(RSA.readPublicKeyFromString(environment.getRequiredProperty("me.jiangcai.alipay.default.alipayPublicKey")));
+        } catch (InvalidKeySpecException e) {
+            throw new IllegalStateException(e);
+        }
+
+        return defaultAppInfo;
     }
 }
