@@ -59,6 +59,7 @@ public class AlipayServiceImpl implements AlipayService {
             throws IOException, AlipayException, InvalidKeyException {
         appInfo = buildAppInfo(appInfo);
 
+
         try (CloseableHttpClient client = createHttpClient()) {
             HttpPost post = new HttpPost(gatewayUri());
             Map<String, Object> requestData = new HashMap<>();
@@ -94,7 +95,8 @@ public class AlipayServiceImpl implements AlipayService {
         parameters.add(new BasicNameValuePair("app_id", appInfo.getId()));
         parameters.add(new BasicNameValuePair("method", requestMethod));
         parameters.add(new BasicNameValuePair("charset", "utf-8"));
-
+        parameters.add(new BasicNameValuePair("format", "JSON"));
+        parameters.add(new BasicNameValuePair("return_url", "https://www.baidu.com"));
         parameters.add(new BasicNameValuePair("sign_type", "RSA2"));
         parameters.add(new BasicNameValuePair("timestamp", LocalDateTime.now().format(formatter)));
         parameters.add(new BasicNameValuePair("version", "1.0"));

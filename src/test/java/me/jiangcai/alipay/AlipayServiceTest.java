@@ -24,8 +24,8 @@ public class AlipayServiceTest {
 
     @Test
     public void createTrade() throws Exception {
-        ChargeTrade chargeTrade = alipayService.createTrade(null, UUID.randomUUID().toString()
-                , new BigDecimal((double) random.nextInt(100) + random.nextDouble()), "我系订单啊");
+        ChargeTrade chargeTrade = alipayService.createTrade(null, "201903200101010011"
+                , new BigDecimal(100).setScale(2, BigDecimal.ROUND_HALF_UP), "我系订单啊");
     }
 
 }
