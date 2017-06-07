@@ -65,6 +65,8 @@ public class AlipayServiceImpl implements AlipayService {
             requestData.put("out_trade_no", tradeId);
             requestData.put("total_amount", amount);
             requestData.put("subject", subject);
+            requestData.put("product_code", "FAST_INSTANT_TRADE_PAY");
+
             if (!StringUtils.isEmpty(appInfo.getSellerId())) {
                 requestData.put("seller_id", appInfo.getSellerId());
             }
