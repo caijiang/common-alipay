@@ -31,7 +31,7 @@ public interface AlipayService {
 
 
     /**
-     * 创建pc端网页支付
+     * 创建桌面网页支付
      * @param appInfo 可选的appInfo
      * @param tradeId 商户订单号,64个字符以内、只能包含字母、数字、下划线；需保证在商户端不重复
      * @param amount  订单总金额，单位为元，精确到小数点后两位
@@ -41,9 +41,8 @@ public interface AlipayService {
      * @throws AlipayException
      * @throws InvalidKeyException
      */
-    ResponseEntity<?> createPcPagePay(AppInfo appInfo, String tradeId, BigDecimal amount, String subject) throws IOException
+    ResponseEntity<?> createDesktopPageTrade(AppInfo appInfo, String tradeId, BigDecimal amount, String subject) throws IOException
             , AlipayException, InvalidKeyException;
-
 
 
     /**

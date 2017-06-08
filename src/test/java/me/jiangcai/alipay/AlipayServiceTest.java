@@ -35,7 +35,7 @@ public class AlipayServiceTest {
     @Test
     public void pcPagePayTest() throws Exception{
 
-       ResponseEntity<?> responseEntity =  alipayService.createPcPagePay(null,UUID.randomUUID().toString(),new BigDecimal((double) random.nextInt(100) + random.nextDouble()),"test");
+       ResponseEntity<?> responseEntity =  alipayService.createDesktopPageTrade(null,UUID.randomUUID().toString(),new BigDecimal((double) random.nextInt(100) + random.nextDouble()),"test");
        // assertThat(responseEntity.getHeaders().get);
 
         System.out.println(responseEntity.getHeaders().getLocation());

@@ -98,7 +98,7 @@ public class AlipayServiceImpl implements AlipayService {
     }
 
     @Override
-    public ResponseEntity<?> createPcPagePay(AppInfo appInfo, String tradeId, BigDecimal amount, String subject) throws IOException, AlipayException, InvalidKeyException {
+    public ResponseEntity<?> createDesktopPageTrade(AppInfo appInfo, String tradeId, BigDecimal amount, String subject) throws IOException, AlipayException, InvalidKeyException {
 
         appInfo = buildAppInfo(appInfo);
         //保留2位小数
@@ -155,8 +155,6 @@ public class AlipayServiceImpl implements AlipayService {
         parameters.add(new BasicNameValuePair("sign_type", "RSA2"));
         parameters.add(new BasicNameValuePair("timestamp", LocalDateTime.now().format(formatter)));
         parameters.add(new BasicNameValuePair("version", "1.0"));
-
-
         if (!StringUtils.isEmpty(appInfo.getNotifyUrl()))
             parameters.add(new BasicNameValuePair("notify_url", appInfo.getNotifyUrl()));
         try {
@@ -189,6 +187,8 @@ public class AlipayServiceImpl implements AlipayService {
             throw new IllegalStateException(e);
         }
     }
+
+
 
     private String gatewayUri() {
         if (environment.containsProperty("me.jiangcai.alipay.sandbox"))
