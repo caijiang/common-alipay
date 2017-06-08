@@ -17,4 +17,5 @@ public class TradeChangeEvent {
      */
     private final String alipayTradeId;
     private  final TradeStatus status;
+
 }

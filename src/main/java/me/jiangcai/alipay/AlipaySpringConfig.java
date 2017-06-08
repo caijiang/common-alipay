@@ -20,6 +20,8 @@ import org.springframework.context.annotation.Configuration;
  * @author CJ
  */
 @Configuration
-@ComponentScan("me.jiangcai.alipay.service")
+@ComponentScan(
+        {"me.jiangcai.alipay.service","me.jiangcai.alipay.controller"}
+)
 public class AlipaySpringConfig {
 }
