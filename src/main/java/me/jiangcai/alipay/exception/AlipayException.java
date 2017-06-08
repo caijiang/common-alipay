@@ -9,7 +9,11 @@ import me.jiangcai.alipay.response.GlobalResponse;
  */
 public class AlipayException extends RuntimeException {
 
-    private final GlobalResponse response;
+    private GlobalResponse response;
+
+    public AlipayException(Throwable cause) {
+        super(cause);
+    }
 
     public AlipayException(GlobalResponse globalResponse) {
         this.response = globalResponse;

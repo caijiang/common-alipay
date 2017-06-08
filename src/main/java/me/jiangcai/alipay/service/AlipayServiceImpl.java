@@ -12,8 +12,10 @@ import me.jiangcai.alipay.response.TradeCreate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.EntityBuilder;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -21,11 +23,15 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -60,7 +66,11 @@ public class AlipayServiceImpl implements AlipayService {
         appInfo = buildAppInfo(appInfo);
 
 
+        //保留2位小数
+        amount = amount.setScale(2, BigDecimal.ROUND_HALF_UP);
+
         try (CloseableHttpClient client = createHttpClient()) {
+            HttpGet get = new HttpGet(gatewayUri());
             HttpPost post = new HttpPost(gatewayUri());
             Map<String, Object> requestData = new HashMap<>();
             requestData.put("out_trade_no", tradeId);
@@ -74,8 +84,10 @@ public class AlipayServiceImpl implements AlipayService {
             if (!StringUtils.isEmpty(appInfo.getSellerId())) {
                 requestData.put("seller_id", appInfo.getSellerId());
             }
+
+            HttpEntity entity =  createEntityFor(appInfo, "alipay.trade.create", requestData);
             post.setEntity(
-                    createEntityFor(appInfo, "alipay.trade.create", requestData)
+                    entity
             );
 
             TradeCreate tradeCreate = client.execute(post, new ResponseHandler<>(TradeCreate.class, appInfo));
@@ -85,25 +97,65 @@ public class AlipayServiceImpl implements AlipayService {
         return null;
     }
 
+    @Override
+    public ResponseEntity<?> createPcPagePay(AppInfo appInfo, String tradeId, BigDecimal amount, String subject) throws IOException, AlipayException, InvalidKeyException {
+
+        appInfo = buildAppInfo(appInfo);
+        //保留2位小数
+        amount = amount.setScale(2, BigDecimal.ROUND_HALF_UP);
+        try (CloseableHttpClient client = createHttpClient()) {
+            HttpGet get = new HttpGet(gatewayUri());
+            HttpPost post = new HttpPost(gatewayUri());
+            Map<String, Object> requestData = new HashMap<>();
+            requestData.put("out_trade_no", tradeId);
+            requestData.put("total_amount", amount);
+            requestData.put("subject", subject);
+            requestData.put("product_code", "FAST_INSTANT_TRADE_PAY");
+            requestData.put("body", subject);
+            requestData.put("passback_params", "merchantBizType%3d3C%26merchantBizNo%3d2016010101111");
+            requestData.put("timeout_express", "90m");
+
+            if (!StringUtils.isEmpty(appInfo.getSellerId())) {
+                requestData.put("seller_id", appInfo.getSellerId());
+            }
+
+            HttpEntity entity =  createEntityFor(appInfo, "alipay.trade.page.pay", requestData);
+            post.setEntity(
+                    entity
+            );
+            try {
+                return ResponseEntity
+                        .status(HttpStatus.SC_MOVED_TEMPORARILY)
+                        .location(new URI(client.execute(post).getFirstHeader("location").getValue()))
+   //                    .contentType(MediaType.parseMediaType("text/html; charset=UTF-8"))
+                        .build()
+                ;
+            } catch (URISyntaxException e) {
+                throw new AlipayException(e);
+            }
+        }
+    }
+
+
+
     public static final ObjectMapper objectMapper = new ObjectMapper();
     static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
 
     private HttpEntity createEntityFor(AppInfo appInfo, String requestMethod, Map<String, Object> requestData) throws InvalidKeyException {
         List<NameValuePair> parameters = new ArrayList<>();
 
-//        if (!requestData.containsKey("extend_params")) {
-//            requestData.put("extend_params", Collections.emptyMap());
-//        }
+        if (!requestData.containsKey("extend_params")) {
+            requestData.put("extend_params", Collections.emptyMap());
+        }
 
         parameters.add(new BasicNameValuePair("app_id", appInfo.getId()));
         parameters.add(new BasicNameValuePair("method", requestMethod));
         parameters.add(new BasicNameValuePair("charset", "utf-8"));
         parameters.add(new BasicNameValuePair("format", "JSON"));
-        parameters.add(new BasicNameValuePair("return_url", "https://www.baidu.com"));
         parameters.add(new BasicNameValuePair("sign_type", "RSA2"));
         parameters.add(new BasicNameValuePair("timestamp", LocalDateTime.now().format(formatter)));
         parameters.add(new BasicNameValuePair("version", "1.0"));
-        parameters.add(new BasicNameValuePair("notify_url", "https://www.baidu.com"));
+
 
         if (!StringUtils.isEmpty(appInfo.getNotifyUrl()))
             parameters.add(new BasicNameValuePair("notify_url", appInfo.getNotifyUrl()));

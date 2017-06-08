@@ -1,6 +1,7 @@
 package me.jiangcai.alipay;
 
 import me.jiangcai.alipay.exception.AlipayException;
+import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -27,6 +28,23 @@ public interface AlipayService {
      */
     ChargeTrade createTrade(AppInfo appInfo, String tradeId, BigDecimal amount, String subject) throws IOException
             , AlipayException, InvalidKeyException;
+
+
+    /**
+     * 创建pc端网页支付
+     * @param appInfo 可选的appInfo
+     * @param tradeId 商户订单号,64个字符以内、只能包含字母、数字、下划线；需保证在商户端不重复
+     * @param amount  订单总金额，单位为元，精确到小数点后两位
+     * @param subject  标题
+     * @return
+     * @throws IOException
+     * @throws AlipayException
+     * @throws InvalidKeyException
+     */
+    ResponseEntity<?> createPcPagePay(AppInfo appInfo, String tradeId, BigDecimal amount, String subject) throws IOException
+            , AlipayException, InvalidKeyException;
+
+
 
     /**
      *
